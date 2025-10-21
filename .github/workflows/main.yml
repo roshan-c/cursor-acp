@@ -1,26 +1,38 @@
-name: Build with Bun
+name: Build and Release Multi-Platform
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    tags:
+      - 'v*'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: macos-latest
+            name: macos
+          - os: windows-latest
+            name: windows
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: Install dependencies
         run: bun install
 
-      - name: Build
-        run: bun run build
+      - name: Build executable
+        run: bun build --compile --outfile myapp-${{ matrix.name }} ./src/index.ts
 
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: myapp-${{ matrix.name }}*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
