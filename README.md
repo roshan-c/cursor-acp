@@ -1,6 +1,15 @@
 # Cursor → ACP Adapter
 
-An adapter that bridges the Cursor CLI agent (`cursor-agent`) to the Agent Client Protocol (ACP). It exposes the Cursor agent over ACP’s ndjson stream so any ACP client can drive it.
+An adapter that bridges the Cursor CLI agent (`cursor-agent`) to the Agent Client Protocol (ACP). It exposes the Cursor agent over ACP’s ndjson stream so any ACP client can drive it. So far, it can be used in these clients:
+- Zed
+- JetBrains (coming soon)
+- AionUi
+- Emacs via agent-shell.el
+- marimo notebook
+- neovim
+  - through the CodeCompanion plugin
+  - through the yetone/avante.nvim plugin
+
 
 ## Features
 - Prompt streaming: forwards assistant/user chunks from Cursor to ACP in real time
