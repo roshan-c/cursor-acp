@@ -81,6 +81,42 @@ console.log("stopReason=", res.stopReason);
 proc.kill();
 ```
 
+## Zed
+
+Use this adapter as an External Agent in Zed.
+
+1) Build the adapter
+
+```bash
+cd /path/to/cursor-acp/cursor-acp
+npm install
+npm run build
+```
+
+2) Configure Zed (settings.json)
+
+Add an entry under `agent_servers` pointing to the built adapter:
+
+```jsonc
+"agent_servers": {
+  // ... your other agents
+  "Cursor": {
+    "command": "node",
+    "args": ["/absolute/path/to/cursor-acp/cursor-acp/dist/index.js"],
+    "env": {
+      // Optional: only if cursor-agent isn’t on PATH
+      // "CURSOR_AGENT_EXECUTABLE": "/usr/local/bin/cursor-agent"
+    }
+  }
+}
+```
+
+3) Use it in Zed
+
+- Open the Agent panel in Zed.
+- Click "+" → New Thread → choose "Cursor".
+- If prompted to authenticate, run `cursor-agent login` in a terminal and retry.
+
 ## Environment
 
 - `CURSOR_AGENT_EXECUTABLE` – optional path to the Cursor binary (defaults to `cursor-agent`)
