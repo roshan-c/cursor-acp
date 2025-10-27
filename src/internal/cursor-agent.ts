@@ -136,12 +136,18 @@ export class CursorAcpAgent implements Agent {
     // Parse NDJSON from stdout
     const rl = readline.createInterface({ input: child.stdout });
     let stopReason: PromptResponse["stopReason"] | undefined;
+    let lastAssistantText = "";
 
     rl.on("line", (line) => {
       try {
         const evt = JSON.parse(line);
-        for (const note of mapCursorEventToAcp(params.sessionId, evt)) {
+        for (const note of mapCursorEventToAcp(params.sessionId, evt, lastAssistantText)) {
           this.client.sessionUpdate(note);
+        }
+        // Track the last assistant text for deduplication
+        if (evt.type === "assistant") {
+          const text = evt?.message?.content?.[0]?.text ?? "";
+          if (text) lastAssistantText = text;
         }
         if (evt.type === "result") {
           if (evt.subtype === "success") {
@@ -337,7 +343,7 @@ function summarizeSearchResult(toolKindKey: string | undefined, args: any, resul
   return undefined;
 }
 
-function mapCursorEventToAcp(sessionId: string, evt: any): SessionNotification[] {
+function mapCursorEventToAcp(sessionId: string, evt: any, lastAssistantText = ""): SessionNotification[] {
   const out: SessionNotification[] = [];
   switch (evt.type) {
     case "user": {
@@ -347,7 +353,13 @@ function mapCursorEventToAcp(sessionId: string, evt: any): SessionNotification[]
     }
     case "assistant": {
       const text = evt?.message?.content?.[0]?.text ?? "";
-      if (text) out.push({ sessionId, update: { sessionUpdate: "agent_message_chunk", content: { type: "text", text } } });
+      if (text && text !== lastAssistantText) {
+        // Only send the delta (new text) to avoid duplicate messages
+        const delta = text.startsWith(lastAssistantText) ? text.slice(lastAssistantText.length) : text;
+        if (delta) {
+          out.push({ sessionId, update: { sessionUpdate: "agent_message_chunk", content: { type: "text", text: delta } } });
+        }
+      }
       break;
     }
     case "tool_call": {
