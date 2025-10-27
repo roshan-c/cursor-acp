@@ -341,8 +341,8 @@ function mapCursorEventToAcp(sessionId: string, evt: any): SessionNotification[]
   const out: SessionNotification[] = [];
   switch (evt.type) {
     case "user": {
-      const text = evt?.message?.content?.[0]?.text ?? "";
-      if (text) out.push({ sessionId, update: { sessionUpdate: "user_message_chunk", content: { type: "text", text } } });
+      // Skip user events to avoid echoing the user's message back to the client
+      // The client already knows what the user said from the prompt request
       break;
     }
     case "assistant": {
