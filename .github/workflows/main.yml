@@ -3,11 +3,11 @@ name: CI and NPM Publish
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
   workflow_dispatch:
-  tags:
-    - 'v*'
 
 jobs:
   ci:
