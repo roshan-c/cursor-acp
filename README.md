@@ -1,6 +1,8 @@
 # Cursor → ACP Adapter
 
-An adapter that bridges the Cursor CLI agent (`cursor-agent`) to the Agent Client Protocol (ACP). It exposes the Cursor agent over ACP’s ndjson stream so any ACP client can drive it. So far, it can be used in these clients:
+[![npm version](https://img.shields.io/npm/v/cursor-acp.svg)](https://www.npmjs.com/package/cursor-acp)
+
+An adapter that bridges the Cursor CLI agent (`cursor-agent`) to the Agent Client Protocol (ACP). It exposes the Cursor agent over ACP's ndjson stream so any ACP client can drive it. So far, it can be used in these clients:
 - Zed
 - JetBrains (coming soon)
 - AionUi
@@ -26,11 +28,16 @@ An adapter that bridges the Cursor CLI agent (`cursor-agent`) to the Agent Clien
 - Node.js 18+
 - Cursor CLI (`cursor-agent`) installed and on PATH
 
-Then:
+Install via npm:
 
 ```bash
-npm install
-npm run build
+npm install -g cursor-acp
+```
+
+Or install locally in your project:
+
+```bash
+npm install cursor-acp
 ```
 
 ## Usage
@@ -38,6 +45,20 @@ npm run build
 Expose the ACP server:
 
 ```bash
+cursor-acp
+```
+
+If installed locally (without `-g`), use:
+
+```bash
+npx cursor-acp
+```
+
+Or if building from source:
+
+```bash
+npm install
+npm run build
 node ./dist/index.js
 ```
 
@@ -68,8 +89,11 @@ const env = { ...process.env };
 // Optional: target a specific Cursor binary
 // env.CURSOR_AGENT_EXECUTABLE = "/usr/local/bin/cursor-agent";
 
-// Start the adapter
-const proc = spawn("node", ["./dist/index.js"], { stdio: ["pipe", "pipe", "inherit"], env });
+// Start the adapter (if installed via npm)
+const proc = spawn("cursor-acp", [], { stdio: ["pipe", "pipe", "inherit"], env });
+
+// Or if installed locally:
+// const proc = spawn("npx", ["cursor-acp"], { stdio: ["pipe", "pipe", "inherit"], env });
 
 // Wire ACP stream
 const input = Writable.toWeb(proc.stdin);
@@ -94,28 +118,45 @@ proc.kill();
 
 Use this adapter as an External Agent in Zed.
 
-1) Build the adapter
+1) Install the adapter
 
 ```bash
-cd /path/to/cursor-acp/cursor-acp
-npm install
-npm run build
+npm install -g cursor-acp
 ```
 
 2) Configure Zed (settings.json)
 
-Add an entry under `agent_servers` pointing to the built adapter:
+Add an entry under `agent_servers` pointing to the installed adapter:
 
 ```jsonc
 "agent_servers": {
   // ... your other agents
   "Cursor": {
-    "command": "node",
-    "args": ["/absolute/path/to/cursor-acp/cursor-acp/dist/index.js"],
+    "command": "cursor-acp",
+    "args": [],
     "env": {
-      // Optional: only if cursor-agent isn’t on PATH
+      // Optional: only if cursor-agent isn't on PATH
       // "CURSOR_AGENT_EXECUTABLE": "/usr/local/bin/cursor-agent"
     }
+  }
+}
+```
+
+Alternatively, if you prefer to build from source:
+
+```bash
+npm install
+npm run build
+```
+
+Then configure Zed to use the built file:
+
+```jsonc
+"agent_servers": {
+  "Cursor": {
+    "command": "node",
+    "args": ["/absolute/path/to/cursor-acp/dist/index.js"],
+    "env": {}
   }
 }
 ```
@@ -136,6 +177,15 @@ Add an entry under `agent_servers` pointing to the built adapter:
 - For shell tools, empty stdout is rendered as “(no output)” and exit code is included when provided.
 
 ## Development
+
+To build from source:
+
+```bash
+git clone https://github.com/roshan-c/cursor-acp.git
+cd cursor-acp
+npm install
+npm run build
+```
 
 - Build: `npm run build`
 - Watch: `npm run dev`
