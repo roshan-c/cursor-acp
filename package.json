@@ -2,6 +2,10 @@
   "name": "cursor-acp",
   "version": "0.1.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/roshan-c/cursor-acp"
+  },
   "bin": {
     "cursor-acp": "./dist/index.js"
   },
